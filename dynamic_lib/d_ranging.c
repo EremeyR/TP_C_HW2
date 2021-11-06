@@ -220,7 +220,7 @@ int rank_files(size_t number_of_files, const char *directory_path,
     if ((message_queue_id = msgget(IPC_PRIVATE, IPC_CREAT|0660)) == -1) {
         return -1;
     }
-    message_buf queue_buf = {0,""};
+    message_buf queue_buf = {"",0};
 
     size_t number_of_process = sysconf(_SC_NPROCESSORS_ONLN) - 1;
     int* children_pid = calloc(number_of_process - 1, sizeof(int));
@@ -237,7 +237,7 @@ int rank_files(size_t number_of_files, const char *directory_path,
     for (size_t i = process_id; i < number_of_files; i += number_of_process) {
         char message_text[MAX_SEND_SIZE] = "";
 
-        char file_path[255] = "";
+        char file_path[512] = "";
         if (get_path(file_path, directory_path, file_list[i]) == -1) {
             free(children_pid);
             return -1;
