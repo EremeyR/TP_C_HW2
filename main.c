@@ -11,15 +11,31 @@ int main() {
 
     size_t top5_indexes[5];
     char directory_path[256] = "../Tests";
+    char request[256] = "es";
 
-    get_file_names(directory_path, file_list, number_of_files);
+    if (get_file_names(directory_path, file_list, number_of_files) == -1) {
+        free(file_list);
+        free(ranks);
+        return -1;
+    }
 
-    rank_files(number_of_files, directory_path, file_list, ranks);
+    if (rank_files(number_of_files, directory_path, file_list, ranks, request) == -1) {
+        free(file_list);
+        free(ranks);
+        return -1;
+    }
 
-    get_top5(top5_indexes, ranks, number_of_files);
+    if (get_top5(top5_indexes, ranks, number_of_files) == -1) {
+        free(file_list);
+        free(ranks);
+        return -1;
+    }
 
-    print_top(top5_indexes, ranks, file_list);
-
+    if (print_top(top5_indexes, ranks, file_list) == -1) {
+        free(file_list);
+        free(ranks);
+        return -1;
+    }
 
     free(file_list);
     free(ranks);
