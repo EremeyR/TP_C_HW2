@@ -1,0 +1,19 @@
+dist:     trusty
+sudo:     required
+
+language: c
+
+os:
+    - linux
+    
+    compiler:
+    - gcc
+    
+    install:
+    - source ci/travis/install-$TRAVIS_OS_NAME.sh
+    
+    script:
+    - mkdir build
+    - cd build
+    - cmake ..
+    - build
