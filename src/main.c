@@ -1,5 +1,4 @@
-#include "static_lib/ranging.h"
-#include "dynamic_lib/d_ranging.h"
+#include "d_ranking.h"
 
 int main() {
     size_t number_of_files = 500;

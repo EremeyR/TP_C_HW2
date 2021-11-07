@@ -1,4 +1,55 @@
-#include "ranging.h"
+#include "d_ranking.h"
+
+static int message_parser(const char *message, size_t* position, size_t* rank) {
+    if (message == NULL || position == NULL || rank == NULL) {
+        return -1;
+    }
+    if (strlen(message) < 3) {
+        return -1;
+    }
+
+    char position_str[MAX_NUMBER_STR_SIZE + 1] = "";
+    char rank_str[MAX_NUMBER_STR_SIZE + 1] = "";
+
+    size_t i = 0;
+    while (message[i] != '|') {
+        if (message[i] == '\0') {
+            return -1;
+        }
+        if (i >=  MAX_NUMBER_STR_SIZE) {
+            return -1;
+        }
+
+        position_str[i] = message[i];
+        ++i;
+    }
+    position_str[i + 1] = '\0';
+
+    size_t temporary_value = strtoul(position_str, NULL, 10);
+    if (temporary_value == -1){
+        return - 1;
+    }
+    *position = temporary_value;
+
+
+    size_t j = i + 1;
+    while (message[j] != '\0') {
+        if (j - (i +  1) >=  MAX_NUMBER_STR_SIZE) {
+            return -1;
+        }
+
+        rank_str[j - (i +  1)] = message[j];
+        ++j;
+    }
+
+    temporary_value = strtoul(rank_str, NULL, 10);
+    if (temporary_value == -1){
+        return - 1;
+    }
+    *rank = temporary_value;
+
+    return 0;
+}
 
 static int get_path(char *path, const char *directory_path, const char *file_name) {
     if (path == NULL || directory_path == NULL || file_name == NULL){
@@ -21,6 +72,37 @@ static int get_path(char *path, const char *directory_path, const char *file_nam
         return -1;
     }
 
+    return 0;
+}
+
+static int add_processes(int* process_id, int* children_pid, size_t number_of_process) {
+    for (int i = 0; i < number_of_process - 1; ++i) {
+        int pid = fork();
+        if(pid == -1) {
+            return -1;
+        }
+        children_pid[i] = pid;
+        if (pid == 0) {
+            *process_id = i + 1;
+            break;
+        }
+    }
+    return 0;
+}
+
+static int close_processes(int process_id, int* children_pid, size_t number_of_process) {
+    int stat = 0;
+
+    if (process_id != MAIN_PROCESS_ID) {
+        exit(0);
+    } else {
+        for (size_t i = 0; i < number_of_process - 1; ++i) {
+            int status = waitpid(children_pid[i], &stat, 0);
+            if (status == -1) {
+                return -1;
+            }
+        }
+    }
     return 0;
 }
 
@@ -94,22 +176,99 @@ static int rank(size_t* rank, char* path, const char* request) {
     return 0;
 }
 
+static int get_rank(size_t* ranks, int qid, message_buf *qbuf) {
+    if (qbuf == NULL || ranks == NULL) {
+        return -1;
+    }
+
+    qbuf->mtype = RANG_TYPE;
+    if (msgrcv(qid, (struct msgbuf *)qbuf, MAX_SEND_SIZE, RANG_TYPE, 0) < 0) {
+        return -1;
+    } else {
+        size_t position = 0;
+        size_t rank = 0;
+        if (message_parser(qbuf->mtext, &position, &rank) == -1) {
+            return -1;
+        } else {
+            ranks[position] = rank;
+        }
+    }
+    return 0;
+}
+
+static int send_rank(int qid, message_buf *qbuf, char *message) {
+    if (message == NULL || qbuf == NULL) {
+        return -1;
+    }
+    qbuf->mtype = RANG_TYPE;
+
+    if(strlen(message) > MAX_SEND_SIZE) {
+        return -1;
+    } else {
+        strcpy(qbuf->mtext, message);
+    }
+
+    if (msgsnd(qid, (struct msgbuf *)qbuf, strlen(qbuf->mtext) + 1, 0) == -1) {
+        return -1;
+    }
+    return 0;
+}
+
 int rank_files(size_t number_of_files, const char *directory_path,
                char (*file_list)[256], size_t* rank_list, const char *request) {
-    for (size_t i = 0; i < number_of_files; ++i) {
+    int message_queue_id;
+    if ((message_queue_id = msgget(IPC_PRIVATE, IPC_CREAT|0660)) == -1) {
+        return -1;
+    }
+    message_buf queue_buf = {"",0};
+
+    size_t number_of_process = sysconf(_SC_NPROCESSORS_ONLN) - 1;
+    int* children_pid = calloc(number_of_process - 1, sizeof(int));
+    if (children_pid == NULL) {
+        return -1;
+    }
+    int process_id = MAIN_PROCESS_ID;
+
+    if (add_processes(&process_id, children_pid, number_of_process)) {
+        free(children_pid);
+        return -1;
+    }
+
+    for (size_t i = process_id; i < number_of_files; i += number_of_process) {
+        char message_text[MAX_SEND_SIZE] = "";
 
         char file_path[512] = "";
         if (get_path(file_path, directory_path, file_list[i]) == -1) {
+            free(children_pid);
             return -1;
         }
 
         size_t file_rank = 0;
         if (rank(&file_rank, file_path, request) == -1) {
+            free(children_pid);
             return -1;
-        } else {
-            rank_list[i] = file_rank;
+        }
+        if (sprintf(message_text, "%zu|%zu", i, file_rank) == -1) {
+            free(children_pid);
+            return -1;
+        }
+        if (send_rank(message_queue_id, &queue_buf, message_text) == -1) {
+            free(children_pid);
+            return -1;
         }
     }
+
+    if(close_processes(process_id, children_pid, number_of_process) == -1) {
+        free(children_pid);
+        return -1;
+    }
+
+    free(children_pid);
+
+    for (int i = 0; i < number_of_files; ++i) {
+        get_rank(rank_list, message_queue_id, &queue_buf);
+    }
+
     return 0;
 }
 
@@ -212,7 +371,7 @@ int get_top5(size_t* top5_indexes, const size_t* ranks, size_t number_of_files) 
 
     for (int i = 0; i < number_of_files; ++i) {
         if (top5_indexes[top_size - 1] == -1 ||
-            ranks[i] >= ranks[top5_indexes[top_size - 1]]) {
+        ranks[i] >= ranks[top5_indexes[top_size - 1]]) {
 
             int is_put = 0;
             int j = 0;
