@@ -1,4 +1,4 @@
-add_executable(static_ranking_test src/static_ranking_test)
+add_executable(static_ranking_test src/static_ranking_test.cpp)
 
 target_link_libraries(static_ranking_test PRIVATE ranking_lib)
 

@@ -1,0 +1,5 @@
+add_executable(dynamic_ranking_test src/dynamic_ranking_test.cpp)
+
+target_link_libraries(dynamic_ranking_test PRIVATE d_ranking_lib)
+
+add_test(NAME dynamic_ranking_test COMMAND dynamic_ranking_test)
