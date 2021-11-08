@@ -1,0 +1,5 @@
+add_executable(static_ranking_test src/static_ranking_test)
+
+target_link_libraries(static_ranking_test PRIVATE ranking_lib)
+
+add_test(NAME static_ranking_test COMMAND static_ranking_test)

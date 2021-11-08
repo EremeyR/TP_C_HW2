@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
-project(TP_C_HW2 C)
+project(TP_C_HW2)
 
 set(CMAKE_C_STANDARD 11)
 set(SOURCE "src/main.c")
+
+enable_testing()
 
 add_subdirectory(lib/static_ranking)
 add_subdirectory(lib/dynamic_ranking)
