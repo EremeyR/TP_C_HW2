@@ -139,13 +139,13 @@ static int check_type(const char* file_name) {
 }
 
 int get_file_names(char* dir_name, char (*file_list)[256], size_t list_size) {
-    if (strlen(dir_name) == 0) {
-        return -1;
-    }
-    if (file_list == NULL) {
+    if (file_list == NULL || dir_name == NULL) {
         return -1;
     }
     if (list_size == 0) {
+        return -1;
+    }
+    if (strlen(dir_name) == 0) {
         return -1;
     }
 
