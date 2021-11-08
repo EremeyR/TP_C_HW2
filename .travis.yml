@@ -8,12 +8,12 @@ install:
     - sudo apt-get install --yes libgtest-dev
     - sudo apt-get install --yes gcovr
     - sudo apt-get install --yes python3-pip
+    - pip install cpplint
 
 jobs:
     - stage: Cpplint
       script:
-        pip install cpplint
-        cpplint --filter=-build/include_subdir src/*
+        - cpplint --filter=-build/include_subdir src/*
     - stage: Build
       script:
         - cmake -B build -DCMAKE_BUILD_TYPE=Release
