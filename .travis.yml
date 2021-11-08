@@ -2,9 +2,6 @@ os:       linux
 dist:     trusty
 language: c
 
-install:
- - sudo apt-get update
-
 jobs:
  - stage: Build
    script:
