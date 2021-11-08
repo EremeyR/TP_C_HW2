@@ -27,6 +27,6 @@ add_executable(${PROJECT_NAME} ${SOURCE})
 target_link_libraries(${PROJECT_NAME} PRIVATE ranking_lib)
 target_link_libraries(${PROJECT_NAME} PRIVATE d_ranking_lib)
 
-target_include_directories(${PROJECT_NAME} PUBLIC lib/static_ranking)
-target_include_directories(${PROJECT_NAME} PUBLIC lib/dynamic_ranking)
+target_include_directories(${PROJECT_NAME} PUBLIC lib/static_ranking/include)
+target_include_directories(${PROJECT_NAME} PUBLIC lib/dynamic_ranking/include)
 

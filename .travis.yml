@@ -9,6 +9,10 @@ install:
     - sudo apt-get install --yes gcovr
 
 jobs:
+    - stage: Cpplint
+      script:
+        pip install cpplint
+        cpplint --filter=-build/include_subdir src/*
     - stage: Build
       script:
         - cmake -B build -DCMAKE_BUILD_TYPE=Release
