@@ -18,3 +18,10 @@ jobs:
         - cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_TESTS=ON
         - make -C build
         - cd build && ctest --output-on-failure
+    - stage: TestCoverage
+      script:
+        - cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=ON
+        - make -C build all test
+        - curl -Os https://uploader.codecov.io/latest/linux/codecov
+        - chmod +xcodecov
+        - ./codecov -f <(gcovr -x)

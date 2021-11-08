@@ -4,13 +4,19 @@ project(TP_C_HW2)
 set(CMAKE_C_STANDARD 11)
 set(SOURCE "src/main.c")
 
+option(WITH_COVERAGE "check coverage")
+if (WITH_COVERAGE)
+    add_compile_options(--coverage)
+    add_link_options(--coverage)
+    set(BUILD_TEST ON)
+endif ()
+
 option(WITH_TESTS "build tests" ON)
 if (WITH_TESTS)
     set(BUILD_TEST ON)
 endif ()
 
-if (WITH_TESTS)
-    #find_package(GTest)
+if (BUILD_TEST)
     enable_testing()
 endif ()
 
