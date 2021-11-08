@@ -1,19 +1,14 @@
+os:       linux
 dist:     trusty
-sudo:     required
-
 language: c
 
-os:
-    - linux
-    
-    compiler:
-    - gcc
-    
-    install:
-    - source ci/travis/install-$TRAVIS_OS_NAME.sh
-    
-    script:
-    - mkdir build
-    - cd build
-    - cmake ..
-    - build
+install:
+ - sudo apt-get update
+ - sudo apt-get --yes libgtest-dev
+ - sudo apt-get --yes gcovr
+
+jobs:
+ - stage: Build
+   script:
+    - cmake -B build
+    - make -C build
