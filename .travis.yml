@@ -1,6 +1,14 @@
-os:       linux
-dist:     trusty
+dist:     focal
+sudo:     required
 language: c
+os: linux
 
-script:
-  - cmake -B build
+install:
+    - sudo apt-get update
+
+jobs:
+    - stage: Build
+      script:
+          - cmake -B build
+          - make -C build
+
