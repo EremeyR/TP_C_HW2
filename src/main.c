@@ -1,5 +1,5 @@
 //  Copyright 2021 Eremey Remzin
-#include "d_ranking.h"
+#include "../lib/static_ranking/include/ranking.h"
 
 int main() {
     char directory_path[256] = "../Tests";

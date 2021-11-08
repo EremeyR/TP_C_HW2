@@ -27,7 +27,7 @@ static int check_type(const char* file_name) {
     return 1;
 }
 
-int ranked_files_init(ranked_file** ranked_files, char* directory_path,
+size_t ranked_files_init(ranked_file** ranked_files, char* directory_path,
                       size_t* number_of_files) {
     if (ranked_files == NULL || directory_path == NULL) {
         return -1;
@@ -65,10 +65,11 @@ int ranked_files_init(ranked_file** ranked_files, char* directory_path,
 
             memcpy((*ranked_files)[(*number_of_files) - 1].file_name,
                    file->d_name, MAX_SEND_SIZE);
+            (*ranked_files)[(*number_of_files) - 1].rank = 0;
         }
     }
     closedir(directory);
-    return 0;
+    return *number_of_files;
 }
 
 static int check_request(size_t* i, const char* text, const char* request) {
@@ -111,7 +112,7 @@ static int rank_text(size_t* rank, const char* text, const char* request) {
     return 0;
 }
 
-static int rank(size_t* rank, char* path, const char* request) {
+static int rank_file(size_t* rank, char* path, const char* request) {
     int fd = open(path, O_RDONLY);
     if (fd == -1) {
         return -1;
@@ -256,14 +257,20 @@ static int get_path(char *path, const char *directory_path,
     return 0;
 }
 
-static int add_processes(int* process_id, int* children_pid,
-                         size_t number_of_process) {
-    for (int i = 0; i < number_of_process - 1; ++i) {
+static int add_processes(int* process_id, int** children_pid,
+                         size_t* number_of_process) {
+    *number_of_process = sysconf(_SC_NPROCESSORS_ONLN) - 1;
+    *children_pid = calloc(*number_of_process - 1, sizeof(int));
+    if (*children_pid == NULL) {
+        return -1;
+    }
+
+    for (int i = 0; i < *number_of_process - 1; ++i) {
         int pid = fork();
         if (pid == -1) {
             return -1;
         }
-        children_pid[i] = pid;
+        (*children_pid)[i] = pid;
         if (pid == 0) {
             *process_id = i + 1;
             break;
@@ -301,14 +308,10 @@ int rank_files(ranked_file* ranked_files, const char *directory_path,
     }
     message_buf queue_buf = {0, ""};
 
-    size_t number_of_process = sysconf(_SC_NPROCESSORS_ONLN) - 1;
-    int* children_pid = calloc(number_of_process - 1, sizeof(int));
-    if (children_pid == NULL) {
-        return -1;
-    }
+    size_t number_of_process = 0;
+    int* children_pid = NULL;
     int process_id = MAIN_PROCESS_ID;
-
-    if (add_processes(&process_id, children_pid, number_of_process)) {
+    if (add_processes(&process_id, &children_pid, &number_of_process)) {
         free(children_pid);
         return -1;
     }
@@ -324,7 +327,7 @@ int rank_files(ranked_file* ranked_files, const char *directory_path,
         }
 
         size_t file_rank = 0;
-        if (rank(&file_rank, file_path, request) == -1) {
+        if (rank_file(&file_rank, file_path, request) == -1) {
             free(children_pid);
             return -1;
         }

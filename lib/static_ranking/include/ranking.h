@@ -1,3 +1,4 @@
+//  Copyright 2021 Eremey Remzin
 #pragma once
 
 #include <stdio.h>
@@ -6,17 +7,41 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <sys/ipc.h>
+#include <sys/types.h>
+#include <sys/msg.h>
+#include <sys/wait.h>
+
 #include <fcntl.h>
 #include <sys/stat.h>
 #include<sys/mman.h>
 
-int get_file_names(char* dir_name, char (*file_list)[256], size_t list_size);
+#define MAX_SEND_SIZE 248
+#define MAX_NUMBER_STR_SIZE 10
+#define RANG_TYPE 1
 
-int rank_files(size_t number_of_files, const char *directory_path,
-               char (*file_list)[256], size_t* rank_list, const char *request);
+#define MAIN_PROCESS_ID 0
 
-int get_top5(size_t* top5_indexes, const size_t* ranks, size_t number_of_files);
+typedef struct ranked_file {
+    int64_t rank;
+    char file_name[MAX_SEND_SIZE];
+} ranked_file;
 
-int print_top(const size_t* top5_indexes, const size_t* ranks, char (*file_list)[256]);
+typedef struct message_buf {
+    int64_t mtype;
+    char mtext[MAX_SEND_SIZE];
+} message_buf;
 
-int get_top_from(char* directory_path, size_t number_of_files);
+size_t ranked_files_init(ranked_file** ranked_files, char* directory_path,
+                      size_t* number_of_files);
+
+int rank_files(ranked_file* ranked_files, const char *directory_path,
+               const char *request, size_t number_of_files);
+
+int get_top5(size_t top5_indexes[5], ranked_file* ranked_files,
+             size_t number_of_files);
+
+int print_top(const size_t top5_indexes[5], ranked_file* ranked_files,
+              size_t number_of_files);
+
+int free_ranked_files(ranked_file* ranked_files);

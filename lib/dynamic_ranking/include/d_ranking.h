@@ -32,7 +32,7 @@ typedef struct message_buf {
     char mtext[MAX_SEND_SIZE];
 } message_buf;
 
-int ranked_files_init(ranked_file** ranked_files, char* directory_path,
+size_t ranked_files_init(ranked_file** ranked_files, char* directory_path,
                       size_t* number_of_files);
 
 int rank_files(ranked_file* ranked_files, const char *directory_path,

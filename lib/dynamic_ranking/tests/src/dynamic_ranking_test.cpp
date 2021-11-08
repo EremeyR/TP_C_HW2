@@ -6,7 +6,7 @@ extern "C" {
 }
 
 TEST(GET_DATA_TESTS, Assert_1) {
-    EXPECT_EQ(get_file_names(NULL, NULL, 0), -1);
+    EXPECT_EQ(ranked_files_init(NULL,NULL, NULL), -1);
 }
 
 int main(int argc, char **argv) {
