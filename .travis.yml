@@ -23,5 +23,5 @@ jobs:
         - cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=ON
         - make -C build all test
         - curl -Os https://uploader.codecov.io/latest/linux/codecov
-        - chmod +xcodecov
+        - chmod +x codecov
         - ./codecov -f <(gcovr -x)
