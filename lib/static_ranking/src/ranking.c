@@ -215,12 +215,14 @@ int get_top5(size_t top5_indexes[5], ranked_file* ranked_files,
 
     for (int i = 0; i < number_of_files; ++i) {
         if (top5_indexes[top_size - 1] == -1 ||
-            ranked_files[i].rank >= ranked_files[top5_indexes[top_size - 1]].rank) {
+            ranked_files[i].rank >=
+            ranked_files[top5_indexes[top_size - 1]].rank) {
             int is_put = 0;
             int j = 0;
             while (j < top_size && !is_put) {
                 if (top5_indexes[j] == -1 ||
-                    ranked_files[i].rank >= ranked_files[top5_indexes[j]].rank) {
+                    ranked_files[i].rank >=
+                    ranked_files[top5_indexes[j]].rank) {
                     add_to_top(j, i, top5_indexes);
                     is_put = 1;
                 }

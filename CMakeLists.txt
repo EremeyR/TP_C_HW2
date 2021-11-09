@@ -25,7 +25,7 @@ add_subdirectory(lib/dynamic_ranking)
 add_subdirectory(lib/test_utiles)
 
 add_executable(${PROJECT_NAME} ${SOURCE})
-#target_link_libraries(${PROJECT_NAME} PRIVATE ranking_lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE ranking_lib)
 target_link_libraries(${PROJECT_NAME} PRIVATE d_ranking_lib)
 
 target_include_directories(${PROJECT_NAME} PUBLIC lib/static_ranking/include)

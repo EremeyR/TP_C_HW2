@@ -1,20 +1,9 @@
 //  Copyright 2021 Eremey Remzin
-#include "../lib/static_ranking/include/ranking.h"
-#define BUF_SIZE 256
+#include "d_ranking.h"
 
-int main(int argc, char* argv[]) {
-    if (argc != 3) {
-        return -1;
-    }
-    if (strlen(argv[1]) >= BUF_SIZE ||
-            strlen(argv[2]) >= BUF_SIZE) {
-        return -1;
-    }
-
-    char directory_path[BUF_SIZE] = "";
-    char request[BUF_SIZE] = "";
-    memcpy(directory_path, argv[1], BUF_SIZE);
-    memcpy(request, argv[2], BUF_SIZE);
+int main() {
+    char directory_path[256] = "../Tests";
+    char request[256] = "Test";
 
     ranked_file* ranked_files;
     size_t top5_indexes[5];
