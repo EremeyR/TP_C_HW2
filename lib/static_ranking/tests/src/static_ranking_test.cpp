@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
 
 extern "C" {
-    #include "ranking.h"
+#include "ranking.h"
+#include "../../test_utiles/include/test_utiles.h"
 }
 
 TEST(GET_DATA_TESTS, Assert_1) {

@@ -22,6 +22,7 @@ endif ()
 
 add_subdirectory(lib/static_ranking)
 add_subdirectory(lib/dynamic_ranking)
+add_subdirectory(lib/test_utiles)
 
 add_executable(${PROJECT_NAME} ${SOURCE})
 #target_link_libraries(${PROJECT_NAME} PRIVATE ranking_lib)
