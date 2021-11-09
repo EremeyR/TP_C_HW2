@@ -143,6 +143,26 @@ TEST(TEST_WITH_FILES, six_files_test) {
     free_ranked_files(ranked_files);
 }
 
+
+TEST(GET_TIME, get_time) {
+    char directory_path[256] = ".";
+    char request[256] = "Test";
+    size_t top5_indexes[5];
+    ranked_file* ranked_files;
+    size_t number_of_files;
+
+    double start_time = getCPUTime();
+
+    for (size_t i = 0; i < 100; ++i) {
+        ranked_files_init(&ranked_files, directory_path, &number_of_files);
+        rank_files(ranked_files, directory_path, request, number_of_files);
+        get_top5(top5_indexes, ranked_files, number_of_files);
+        print_top(top5_indexes, ranked_files, number_of_files);
+        free_ranked_files(ranked_files);
+    }
+    printf("time: %lf sec. \n", (getCPUTime() - start_time) / 100);
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
