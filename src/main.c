@@ -3,7 +3,7 @@
 
 int main() {
     char directory_path[256] = "../Tests";
-    char request[256] = "es";
+    char request[256] = "Test";
 
     ranked_file* ranked_files;
     size_t top5_indexes[5];

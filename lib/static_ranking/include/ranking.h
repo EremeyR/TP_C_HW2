@@ -5,12 +5,6 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <string.h>
-#include <unistd.h>
-
-#include <sys/ipc.h>
-#include <sys/types.h>
-#include <sys/msg.h>
-#include <sys/wait.h>
 
 #include <fcntl.h>
 #include <sys/stat.h>
