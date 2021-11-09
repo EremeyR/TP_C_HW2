@@ -44,6 +44,7 @@ int free_directory(char path[200]) {
         }
     }
     free(file_paths);
+    return 0;
 }
 
 static int add_1mb_file(char file_path[256], char word[10]) {
@@ -102,7 +103,7 @@ int add_empty_file(char path[200]) {
     if (f == NULL) {
         return -1;
     }
-    fprintf(f, "");
+    fprintf(f, " ");
     fclose(f);
     return 0;
 }

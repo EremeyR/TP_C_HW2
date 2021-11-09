@@ -1,5 +1,4 @@
-//  Copyright 2021 Eremey Remzin
-#include "ranking.h"
+#include "d_ranking.h"
 #define BUF_SIZE 256
 
 int main(int argc, char* argv[]) {
