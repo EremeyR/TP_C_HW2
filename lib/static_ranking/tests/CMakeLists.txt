@@ -1,5 +1,3 @@
-file(MAKE_DIRECTORY data)
-
 add_executable(static_ranking_test src/static_ranking_test.cpp)
 
 find_package(GTest)

@@ -52,8 +52,8 @@ static int add_1mb_file(char file_path[256], char word[10]) {
         return -1;
     }
 
-    char text[1000] = "";
-    for (int i = 0; i < 1000 / strlen(word) ; ++i) {
+    char text[1005] = "";
+    for (int i = 0; i < 1005 / strlen(word) - 1; ++i) {
         strcat(text, word);
     }
     fprintf(f, "%s", text);
