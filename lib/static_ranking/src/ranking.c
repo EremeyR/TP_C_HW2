@@ -239,6 +239,9 @@ int print_top(const size_t top5_indexes[5], ranked_file* ranked_files,
     printf("Top 5 out of %zu files:\n\n", number_of_files);
 
     for (size_t i = 0; i < 5; ++i) {
+        if (top5_indexes[i] >= number_of_files) {
+            return -1;
+        }
         printf("%zu. %s, rank: %zu\n", i + 1,
                ranked_files[top5_indexes[i]].file_name,
                ranked_files[top5_indexes[i]].rank);
