@@ -52,8 +52,8 @@ static int add_1mb_file(char file_path[256], char word[10]) {
         return -1;
     }
 
-    char text[1000000] = "";
-    for (int i = 0; i < 1000000 / strlen(word) ; ++i) {
+    char text[1000] = "";
+    for (int i = 0; i < 1000 / strlen(word) ; ++i) {
         strcat(text, word);
     }
     fprintf(f, "%s", text);
@@ -62,7 +62,7 @@ static int add_1mb_file(char file_path[256], char word[10]) {
 }
 
 static int add_1mb_file_with_keywords(char file_path[256] , size_t number) {
-    size_t free_bytes = 1000000;
+    size_t free_bytes = 1000;
     char word[10] = "Test";
     free_bytes -= number * strlen(word);
     FILE *f = fopen(file_path, "w");
@@ -70,7 +70,7 @@ static int add_1mb_file_with_keywords(char file_path[256] , size_t number) {
         return -1;
     }
 
-    char text[1000000] = "";
+    char text[1000] = "";
     for (int i = 0; i < number ; ++i) {
         strcat(text, word);
     }
