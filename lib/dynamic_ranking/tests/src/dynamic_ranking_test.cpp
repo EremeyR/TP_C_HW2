@@ -75,25 +75,6 @@ TEST(TEST_WITH_FILES, one_file_test) {
     free_directory(directory_path);
 }
 
-TEST(TEST_WITH_FILES, one_empty_file_test) {
-    char directory_path[256] = ".";
-    char request[256] = "Test";
-    size_t top5_indexes[5];
-    ranked_file* ranked_files;
-    size_t number_of_files;
-
-    free_directory(directory_path);
-    add_empty_file(directory_path);
-
-    EXPECT_EQ(ranked_files_init(&ranked_files, directory_path, &number_of_files), 1);
-    EXPECT_EQ(ranked_files[0].rank == 0, 1);
-    EXPECT_EQ(number_of_files == 1, 1);
-    EXPECT_EQ(rank_files(ranked_files, directory_path, request, number_of_files), 0);
-    EXPECT_EQ(ranked_files[0].rank == 0, 1);
-    EXPECT_EQ(get_top5(top5_indexes, ranked_files, number_of_files), -1);
-    free_ranked_files(ranked_files);
-}
-
 TEST(TEST_WITH_FILES, four_files_test) {
     char directory_path[256] = ".";
     char request[256] = "Test";
