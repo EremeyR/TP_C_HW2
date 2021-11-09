@@ -190,7 +190,7 @@ int rank_files(ranked_file* ranked_files, const char *directory_path,
 }
 
 static int add_to_top(size_t position, size_t value, size_t* top5_indexes) {
-    if (position < 5) {
+    if (position < 4) {
         add_to_top(position + 1, top5_indexes[position], top5_indexes);
     }
     top5_indexes[position] = value;
