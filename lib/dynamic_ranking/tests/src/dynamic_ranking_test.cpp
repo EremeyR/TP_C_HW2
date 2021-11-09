@@ -72,6 +72,7 @@ TEST(TEST_WITH_FILES, one_file_test) {
     EXPECT_EQ(ranked_files[0].rank == 250, 1);
     EXPECT_EQ(get_top5(top5_indexes, ranked_files, number_of_files), -1);
     free_ranked_files(ranked_files);
+    free_directory(directory_path);
 }
 
 TEST(TEST_WITH_FILES, one_empty_file_test) {
@@ -155,7 +156,7 @@ TEST(TEST_WITH_FILES, six_files_test) {
     EXPECT_EQ(rank_files(ranked_files, directory_path, request, number_of_files), 0);
     EXPECT_EQ(get_top5(top5_indexes, ranked_files, number_of_files), 0);
     EXPECT_EQ(ranked_files[top5_indexes[0]].rank == 250 , 1);
-    for (size_t i = 1; i < real_number_of_files; ++i) {
+    for (size_t i = 1; i < 5; ++i) {
         EXPECT_EQ(ranked_files[top5_indexes[i]].rank
                   == (real_number_of_files - (i + 1)) , 1);
     }
