@@ -164,9 +164,9 @@ static int get_path(char *path, const char *directory_path,
         return -1;
     }
 
-    memcpy(path, directory_path, 512);
-    memcpy(path, "/", 512);
-    memcpy(path, file_name, 512);
+    strncat(path, directory_path, 512);
+    strncat(path, "/", 512);
+    strncat(path, file_name, 512);
 
     if (strlen(path) != (strlen(file_name) + strlen(directory_path) + 1)) {
         return -1;
