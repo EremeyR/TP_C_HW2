@@ -7,16 +7,17 @@ install:
     - sudo apt-get update
     - sudo apt-get install --yes libgtest-dev
     - sudo apt-get install --yes gcovr
-    - sudo apt install valgrind
+    - sudo apt-get install -yes cppcheck
     - sudo apt-get install --yes python3-pip
     - pip install cpplint
 
 jobs:
-    - stage: Cpplint
+    - stage: Cpplint & Cppcheck
       script:
         - cpplint --filter=-build/include_subdir src/*
         - cpplint --filter=-build/include_subdir lib/static_ranking/include/* lib/static_ranking/src/*
         - cpplint --filter=-build/include_subdir lib/dynamic_ranking/include/* lib/dynamic_ranking/src/*
+        - cppcheck --enable=all --suppress=missingInclude lib/static_ranking/src/ lib/dynamic_ranking/src/ src/
     - stage: Build
       script:
         - cmake -B build -DCMAKE_BUILD_TYPE=Release
