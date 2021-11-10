@@ -7,7 +7,7 @@ install:
     - sudo apt-get update
     - sudo apt-get install --yes libgtest-dev
     - sudo apt-get install --yes gcovr
-    - sudo apt-get install -yes cppcheck
+    - sudo apt-get install -y cppcheck
     - sudo apt-get install --yes python3-pip
     - pip install cpplint
 
