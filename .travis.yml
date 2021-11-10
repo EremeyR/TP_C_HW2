@@ -1,0 +1,40 @@
+dist:     focal
+sudo:     required
+language: c
+os: linux
+
+install:
+    - sudo apt-get update
+    - sudo apt-get install --yes libgtest-dev
+    - sudo apt-get install --yes gcovr
+    - sudo apt-get install -y cppcheck
+    - sudo apt-get install --yes python3-pip
+    - pip install cpplint
+
+jobs:
+    - stage: Cpplint & Cppcheck
+      script:
+        - cpplint --filter=-build/include_subdir src/*
+        - cpplint --filter=-build/include_subdir lib/static_ranking/include/* lib/static_ranking/src/*
+        - cpplint --filter=-build/include_subdir lib/dynamic_ranking/include/* lib/dynamic_ranking/src/*
+        - cppcheck --enable=all --suppress=missingInclude lib/static_ranking/src/ lib/dynamic_ranking/src/ src/
+    - stage: Build
+      script:
+        - cmake -B build -DCMAKE_BUILD_TYPE=Release
+        - make -C build
+    - stage: Test
+      script:
+        - cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_TESTS=ON
+        - make -C build
+        - cd build && ctest --output-on-failure
+    - stage: TestCoverage
+      script:
+        - cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=ON
+        - make -C build all test
+        - curl -Os https://uploader.codecov.io/latest/linux/codecov
+        - chmod +x codecov
+        - ./codecov -f <(gcovr -x)
+    - stage: Sanitizer
+      script:
+        - cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_SANITIZER=ON
+        - make -C build
