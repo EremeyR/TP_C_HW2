@@ -37,6 +37,7 @@ int free_directory(char path[200]) {
         if (check_type(file->d_name) == 1) {
             ++number_of_files;
             file_paths = realloc(file_paths, number_of_files * sizeof(*file_paths));
+            file_paths[number_of_files-1][0] = '\0';
             strcat(file_paths[number_of_files-1], path);
             strcat(file_paths[number_of_files-1], "/");
             strcat(file_paths[number_of_files-1], file->d_name);
@@ -45,10 +46,12 @@ int free_directory(char path[200]) {
 
     for (int i = 0; i < number_of_files; ++i) {
         if(remove(file_paths[i]) == -1){
+            closedir(directory);
             free(file_paths);
             return -1;
         }
     }
+    closedir(directory);
     free(file_paths);
     return 0;
 }

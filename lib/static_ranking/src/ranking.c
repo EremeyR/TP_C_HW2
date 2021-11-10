@@ -43,9 +43,13 @@ size_t ranked_files_init(ranked_file** ranked_files, char* directory_path,
 
     *number_of_files = 0;
     *ranked_files = malloc(0);
+    if (*ranked_files == NULL) {
+        return -1;
+    }
 
     DIR *directory = opendir(directory_path);
     if (directory == NULL) {
+        free(*ranked_files);
         return -1;
     }
     struct dirent *file = NULL;
@@ -62,6 +66,11 @@ size_t ranked_files_init(ranked_file** ranked_files, char* directory_path,
 
             *ranked_files = realloc(*ranked_files,
                                     *number_of_files * sizeof(ranked_file));
+            if (*ranked_files == NULL) {
+                free(*ranked_files);
+                closedir(directory);
+                return -1;
+            }
 
             memcpy((*ranked_files)[(*number_of_files) - 1].file_name,
                    file->d_name, MAX_SEND_SIZE);
@@ -130,15 +139,14 @@ static int rank_file(size_t* rank, char* path, const char* request) {
                         fd,
                         0);
     if (region == MAP_FAILED) {
-        close(fd);
         return 1;
     }
     if (rank_text(rank, region, request) == -1) {
-        close(fd);
+        munmap(region, file_size);
         return -1;
     }
 
-    close(fd);
+    munmap(region, file_size);
     return 0;
 }
 
@@ -156,9 +164,9 @@ static int get_path(char *path, const char *directory_path,
         return -1;
     }
 
-    strncat(path, directory_path, 512);
-    strncat(path, "/", 512);
-    strncat(path, file_name, 512);
+    memcpy(path, directory_path, 512);
+    memcpy(path, "/", 512);
+    memcpy(path, file_name, 512);
 
     if (strlen(path) != (strlen(file_name) + strlen(directory_path) + 1)) {
         return -1;
@@ -238,6 +246,11 @@ int print_top(const size_t top5_indexes[5], ranked_file* ranked_files,
     if (top5_indexes == NULL || ranked_files == NULL) {
         return -1;
     }
+
+    if (number_of_files < 5) {
+        return -1;
+    }
+
     printf("Top 5 out of %zu files:\n\n", number_of_files);
 
     for (size_t i = 0; i < 5; ++i) {

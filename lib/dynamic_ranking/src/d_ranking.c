@@ -43,9 +43,13 @@ size_t ranked_files_init(ranked_file** ranked_files, char* directory_path,
 
     *number_of_files = 0;
     *ranked_files = malloc(0);
+    if (*ranked_files == NULL) {
+        return -1;
+    }
 
     DIR *directory = opendir(directory_path);
     if (directory == NULL) {
+        free(*ranked_files);
         return -1;
     }
     struct dirent *file = NULL;
@@ -62,6 +66,11 @@ size_t ranked_files_init(ranked_file** ranked_files, char* directory_path,
 
             *ranked_files = realloc(*ranked_files,
                                     *number_of_files * sizeof(ranked_file));
+            if (*ranked_files == NULL) {
+                free(*ranked_files);
+                closedir(directory);
+                return -1;
+            }
 
             memcpy((*ranked_files)[(*number_of_files) - 1].file_name,
                    file->d_name, MAX_SEND_SIZE);
@@ -130,14 +139,17 @@ static int rank_file(size_t* rank, char* path, const char* request) {
                         fd,
                         0);
     if (region == MAP_FAILED) {
+        munmap(region, file_size);
         close(fd);
         return 1;
     }
     if (rank_text(rank, region, request) == -1) {
+        munmap(region, file_size);
         close(fd);
         return -1;
     }
 
+    munmap(region, file_size);
     close(fd);
     return 0;
 }
@@ -257,20 +269,14 @@ static int get_path(char *path, const char *directory_path,
     return 0;
 }
 
-static int add_processes(int* process_id, int** children_pid,
+static int add_processes(int* process_id, int* children_pid,
                          size_t* number_of_process) {
-    *number_of_process = sysconf(_SC_NPROCESSORS_ONLN) - 1;
-    *children_pid = calloc(*number_of_process - 1, sizeof(int));
-    if (*children_pid == NULL) {
-        return -1;
-    }
-
     for (int i = 0; i < *number_of_process - 1; ++i) {
         int pid = fork();
         if (pid == -1) {
             return -1;
         }
-        (*children_pid)[i] = pid;
+        children_pid[i] = pid;
         if (pid == 0) {
             *process_id = i + 1;
             break;
@@ -308,10 +314,15 @@ int rank_files(ranked_file* ranked_files, const char *directory_path,
     }
     message_buf queue_buf = {0, ""};
 
-    size_t number_of_process = 0;
-    int* children_pid = NULL;
+    size_t number_of_process = sysconf(_SC_NPROCESSORS_ONLN) - 1;
+    int* children_pid = calloc(number_of_process - 1, sizeof(int));
+    if (children_pid == NULL) {
+        return -1;
+    }
     int process_id = MAIN_PROCESS_ID;
-    if (add_processes(&process_id, &children_pid, &number_of_process)) {
+
+
+    if (add_processes(&process_id, children_pid, &number_of_process) == -1) {
         free(children_pid);
         return -1;
     }
@@ -321,22 +332,38 @@ int rank_files(ranked_file* ranked_files, const char *directory_path,
 
         char file_path[512] = "";
         if (get_path(file_path, directory_path, ranked_files[i].file_name)
-        == -1) {
-            free(children_pid);
-            return -1;
+            == -1) {
+            if (process_id != MAIN_PROCESS_ID) {
+                exit(-1);
+            } else {
+                close_processes(process_id, children_pid, number_of_process);
+                free(children_pid);
+                return -1;
+            }
         }
 
         size_t file_rank = 0;
         if (rank_file(&file_rank, file_path, request) == -1) {
-            free(children_pid);
-            return -1;
+            if (process_id != MAIN_PROCESS_ID) {
+                exit(-1);
+            } else {
+                close_processes(process_id, children_pid, number_of_process);
+                free(children_pid);
+                return -1;
+            }
         }
         if (snprintf(message_text, MAX_NUMBER_STR_SIZE * 2 + 1,
                      "%zu|%zu", i, file_rank) == -1) {
-            free(children_pid);
-            return -1;
+            if (process_id != MAIN_PROCESS_ID) {
+                exit(-1);
+            } else {
+                close_processes(process_id, children_pid, number_of_process);
+                free(children_pid);
+                return -1;
+            }
         }
         if (send_rank(message_queue_id, &queue_buf, message_text) == -1) {
+            close_processes(process_id, children_pid, number_of_process);
             free(children_pid);
             return -1;
         }
@@ -345,14 +372,13 @@ int rank_files(ranked_file* ranked_files, const char *directory_path,
     if (close_processes(process_id, children_pid, number_of_process) == -1) {
         free(children_pid);
         return -1;
+    } else {
+        for (int i = 0; i < number_of_files; ++i) {
+            get_rank(ranked_files, message_queue_id, &queue_buf);
+        }
     }
 
     free(children_pid);
-
-    for (int i = 0; i < number_of_files; ++i) {
-        get_rank(ranked_files, message_queue_id, &queue_buf);
-    }
-
     return 0;
 }
 
@@ -403,6 +429,11 @@ int print_top(const size_t top5_indexes[5], ranked_file* ranked_files,
     if (top5_indexes == NULL || ranked_files == NULL) {
         return -1;
     }
+
+    if (number_of_files < 5) {
+        return -1;
+    }
+
     printf("Top 5 out of %zu files:\n\n", number_of_files);
 
     for (size_t i = 0; i < 5; ++i) {

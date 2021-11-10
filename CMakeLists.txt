@@ -10,6 +10,13 @@ if (WITH_COVERAGE)
     set(BUILD_TEST ON)
 endif ()
 
+option(WITH_SANITIZER "add sanitizer")
+if (WITH_SANITIZER)
+    add_compile_options(-fsanitize=address)
+    add_link_options(-fsanitize=address)
+    set(BUILD_TEST ON)
+endif ()
+
 option(WITH_TESTS "build tests" ON)
 if (WITH_TESTS)
     set(BUILD_TEST ON)
