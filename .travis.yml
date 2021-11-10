@@ -38,4 +38,3 @@ jobs:
       script:
         - cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_SANITIZER=ON
         - make -C build
-        - cd build && ctest --output-on-failure
